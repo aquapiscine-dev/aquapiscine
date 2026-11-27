@@ -61,7 +61,7 @@ export function ProduseMenu({ categories }: { categories: CategoryNode[] }) {
                   <button
                     type="button"
                     onClick={() => setOpenCat(openCat === c.id ? null : c.id)}
-                    className="px-3 py-2.5 text-slate/40 hover:text-primary-deep transition-colors shrink-0"
+                    className="px-3 py-2.5 text-ink hover:text-primary-deep transition-colors shrink-0"
                     aria-label={`Subcategorii ${c.name}`}
                   >
                     <svg
