@@ -1,33 +1,11 @@
-import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import sanitizeHtml from "sanitize-html";
-import { getProductBySlug, queryProducts } from "@/lib/products";
+import { queryProducts, type Product } from "@/lib/products";
 import { ProductTile } from "@/components/ProductTile";
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { Waterline } from "@/components/Waterline";
 
-export const dynamic = "force-dynamic";
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
-  const p = await getProductBySlug(slug);
-  if (!p) return { title: "Produs" };
-  return {
-    title: p.name,
-    description: p.short_description || `${p.name} — ${p.brand_name ?? ""} la Aquapiscine`,
-  };
-}
-
-export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const product = await getProductBySlug(slug);
-  if (!product) notFound();
-
+export async function ProductDetail({ product }: { product: Product }) {
   const images = safeJsonArray(product.images);
   const allImages = images.length ? images : product.image_url ? [product.image_url] : [];
   const price = product.sale_price ?? product.price;
@@ -213,7 +191,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 }
 
 // Descrierile din feed sunt text plat (fara taguri, fara newline-uri).
-// Le impartim in paragrafe la final de fraza, max ~600 caractere, ca sa nu fie perete de text.
+// Le impartim in paragrafe la final de fraza, max ~600 caractere, ca sa nu fie pereti de text.
 function toHtmlDescription(raw: string): string {
   if (/<[a-z][\s\S]*>/i.test(raw)) return raw; // deja HTML
   const sentences = raw

@@ -1,33 +1,35 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { queryProducts, getCategoryTree, listBrands, type ProductFilters } from "@/lib/products";
 import { ProductTile } from "@/components/ProductTile";
-import { Waterline } from "@/components/Waterline";
 
-export const dynamic = "force-dynamic";
-
-export const metadata: Metadata = {
-  title: "Produse",
-  description: "Catalog complet echipamente piscine, saune și spa.",
-};
-
-type SP = Promise<Record<string, string | string[] | undefined>>;
+type SP = Record<string, string | string[] | undefined>;
 
 function one(v: string | string[] | undefined) {
   return Array.isArray(v) ? v[0] : v;
 }
 
-export default async function ProdusePage({ searchParams }: { searchParams: SP }) {
-  const sp = await searchParams;
+export async function CatalogBrowser({
+  basePath,
+  sp,
+  pageOverride,
+  title,
+  lockedBrand,
+}: {
+  basePath: string; // "/produse" | "/magazin" | "/brand/{slug}"
+  sp: SP;
+  pageOverride?: number;
+  title?: string;
+  lockedBrand?: string;
+}) {
   const filters: ProductFilters = {
     q: one(sp.q) || undefined,
     category: one(sp.category) || undefined,
-    brand: one(sp.brand) || undefined,
+    brand: lockedBrand ?? (one(sp.brand) || undefined),
     minPrice: one(sp.min) ? parseFloat(one(sp.min)!) : undefined,
     maxPrice: one(sp.max) ? parseFloat(one(sp.max)!) : undefined,
     inStock: one(sp.stoc) === "1" || undefined,
     sort: (one(sp.sort) as ProductFilters["sort"]) || "noutati",
-    page: one(sp.page) ? parseInt(one(sp.page)!, 10) : 1,
+    page: pageOverride ?? (one(sp.page) ? parseInt(one(sp.page)!, 10) : 1),
     perPage: 24,
   };
 
@@ -43,11 +45,18 @@ export default async function ProdusePage({ searchParams }: { searchParams: SP }
     const params = new URLSearchParams();
     for (const [k, v] of Object.entries(sp)) {
       const s = one(v as string | string[] | undefined);
-      if (s) params.set(k, s);
+      if (s && k !== "page") params.set(k, s);
+    }
+    // /magazin pastreaza formatul vechi /magazin/page/N/ (ca pe WooCommerce)
+    if (basePath === "/magazin") {
+      const qs = params.toString();
+      return `/magazin/page/${p}/${qs ? `?${qs}` : ""}`;
     }
     params.set("page", String(p));
-    return `/produse?${params.toString()}`;
+    return `${basePath}?${params.toString()}`;
   };
+
+  const homeLink = basePath === "/magazin" ? "/magazin/" : basePath;
 
   return (
     <div className="depth-bg min-h-screen">
@@ -55,16 +64,17 @@ export default async function ProdusePage({ searchParams }: { searchParams: SP }
         <nav className="font-cta text-xs text-slate mb-4" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-primary-deep">Acasă</Link>
           <span className="mx-2">/</span>
-          <span className="text-ink">Produse</span>
+          <span className="text-ink">{title ?? "Produse"}</span>
         </nav>
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filtre */}
           <aside className="lg:w-64 shrink-0">
             <div className="lg:sticky lg:top-24 space-y-6">
-              <form method="GET" action="/produse" className="space-y-5">
+              <form method="GET" action={basePath} className="space-y-5">
                 {filters.q ? <input type="hidden" name="q" value={filters.q} /> : null}
                 {filters.sort ? <input type="hidden" name="sort" value={filters.sort} /> : null}
+                {filters.brand ? <input type="hidden" name="brand" value={filters.brand} /> : null}
 
                 <div>
                   <h3 className="font-display text-xs font-bold uppercase tracking-widest text-ink mb-2">Căutare</h3>
@@ -108,7 +118,7 @@ export default async function ProdusePage({ searchParams }: { searchParams: SP }
                 <button type="submit" className="btn-pill btn-primary w-full py-2.5 text-xs">
                   Aplică filtrele
                 </button>
-                <Link href="/produse" className="block text-center font-cta text-xs text-slate hover:text-primary-deep">
+                <Link href={homeLink} className="block text-center font-cta text-xs text-slate hover:text-primary-deep">
                   Resetează
                 </Link>
               </form>
@@ -118,7 +128,7 @@ export default async function ProdusePage({ searchParams }: { searchParams: SP }
                 <ul className="space-y-1 max-h-80 overflow-y-auto pr-1">
                   <li>
                     <Link
-                      href="/produse"
+                      href={homeLink}
                       className={`block text-sm py-1 ${!activeCategory ? "text-primary-deep font-semibold" : "text-slate hover:text-primary-deep"}`}
                     >
                       Toate ({total})
@@ -155,7 +165,7 @@ export default async function ProdusePage({ searchParams }: { searchParams: SP }
                   {brands.slice(0, 20).map((b) => (
                     <Link
                       key={b.id}
-                      href={`/produse?brand=${b.slug}`}
+                      href={lockedBrand ? `/brand/${b.slug}/` : `${basePath}?brand=${b.slug}`}
                       className={`font-cta text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
                         activeBrand === b.slug
                           ? "bg-primary text-white border-primary"
@@ -175,11 +185,11 @@ export default async function ProdusePage({ searchParams }: { searchParams: SP }
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
               <div>
                 <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-ink">
-                  {filters.q ? `Rezultate pentru „${filters.q}"` : "Toate produsele"}
+                  {filters.q ? `Rezultate pentru „${filters.q}"` : (title ?? "Toate produsele")}
                 </h1>
                 <p className="font-cta text-sm text-slate mt-1">{total.toLocaleString("ro-RO")} produse</p>
               </div>
-              <form method="GET" action="/produse" className="flex items-center gap-2">
+              <form method="GET" action={basePath} className="flex items-center gap-2">
                 {filters.q ? <input type="hidden" name="q" value={filters.q} /> : null}
                 {filters.category ? <input type="hidden" name="category" value={filters.category} /> : null}
                 {filters.brand ? <input type="hidden" name="brand" value={filters.brand} /> : null}
@@ -191,7 +201,6 @@ export default async function ProdusePage({ searchParams }: { searchParams: SP }
                   id="sort"
                   name="sort"
                   defaultValue={filters.sort}
-                  onChange={undefined}
                   className="h-9 rounded-lg border border-grout bg-white px-2 text-sm focus:outline-none focus:border-primary"
                 >
                   <option value="noutati">Cele mai noi</option>
@@ -207,7 +216,7 @@ export default async function ProdusePage({ searchParams }: { searchParams: SP }
               <div className="tile p-12 text-center">
                 <p className="font-display text-lg font-bold text-ink">Niciun produs găsit</p>
                 <p className="mt-2 text-sm text-slate">Încearcă alte filtre sau un alt termen de căutare.</p>
-                <Link href="/produse" className="btn-pill btn-primary mt-6 inline-flex px-6 py-3 text-xs">
+                <Link href={homeLink} className="btn-pill btn-primary mt-6 inline-flex px-6 py-3 text-xs">
                   Resetează filtrele
                 </Link>
               </div>

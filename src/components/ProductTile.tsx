@@ -14,7 +14,7 @@ export function ProductTile({ product, index }: { product: Product; index?: numb
 
   return (
     <Link
-      href={`/produse/${product.slug}`}
+      href={product.legacy_path ?? `/produse/${product.slug}`}
       className="tile tile-hover group flex flex-col overflow-hidden focus-visible:outline-2 focus-visible:outline-primary"
     >
       <div className="relative aspect-square bg-water-50 overflow-hidden">

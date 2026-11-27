@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     "Echipamente complete pentru piscina ta: filtrare, pompe de căldură, accesorii saună și spa. Livrare rapidă în toată România.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="ro"

@@ -18,6 +18,8 @@ export type Product = {
   availability: string | null;
   is_active: number;
   source_updated: string | null;
+  legacy_path: string | null;
+  legacy_slug: string | null;
   brand_name: string | null;
   brand_slug: string | null;
   category_name: string | null;
@@ -130,6 +132,16 @@ export async function getProductBySlug(slug: string): Promise<Product | undefine
   return rows[0];
 }
 
+// Caută produsul dupa calea veche WooCommerce (ex. /magazin/tratare-piscina/aparate.../slug)
+export async function getProductByLegacyPath(path: string): Promise<Product | undefined> {
+  const sql = getSql();
+  const rows = (await sql.unsafe(
+    `${PRODUCT_SELECT} WHERE p.legacy_path = $1 AND p.is_active = 1 LIMIT 1`,
+    [path] as never[]
+  )) as unknown as Product[];
+  return rows[0];
+}
+
 export async function listCategories(): Promise<Category[]> {
   const sql = getSql();
   return (await sql`
@@ -152,6 +164,17 @@ export async function listBrands(): Promise<Brand[]> {
     GROUP BY b.id
     ORDER BY product_count DESC, LOWER(b.name)
     LIMIT 40`) as Brand[];
+}
+
+export async function getBrandBySlug(slug: string): Promise<Brand | undefined> {
+  const sql = getSql();
+  const rows = (await sql`
+    SELECT b.id, b.name, b.slug, COUNT(p.id)::int AS product_count
+    FROM brands b
+    LEFT JOIN products p ON p.brand_id = b.id AND p.is_active = 1
+    WHERE b.slug = ${slug}
+    GROUP BY b.id LIMIT 1`) as Brand[];
+  return rows[0];
 }
 
 export async function brandsInCategory(ids: number[]): Promise<{ id: number; name: string; slug: string; product_count: number }[]> {
