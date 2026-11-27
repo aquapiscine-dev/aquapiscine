@@ -57,7 +57,7 @@ export default async function HomePage() {
                     </Link>
                     {/* Subcategorii — flyout la hover */}
                     {c.children.length > 0 && (
-                      <div className="absolute left-full top-0 w-60 bg-white border border-grout shadow-lg rounded-r-lg py-2 opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible transition-all duration-150 z-50 -ml-px">
+                      <div className="absolute left-full top-0 w-60 max-lg:hidden bg-white border border-grout shadow-lg rounded-r-lg py-2 opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible transition-all duration-150 z-50 -ml-px">
                         <Link
                           href={`/categorie-produs/${c.slug}/`}
                           className="block px-4 py-2 text-sm font-semibold text-primary-deep hover:bg-water-50"
