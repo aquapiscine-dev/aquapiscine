@@ -117,7 +117,7 @@ export default async function HomePage() {
               </div>
               <div className="relative bg-white flex items-center justify-center p-6 lg:p-10 min-h-[220px]">
                 <Image
-                  src="/uploads/products/kitsp/0.webp"
+                  src="/uploads/products/x60/0.webp"
                   alt="Kit de accesorii pentru saună"
                   width={600}
                   height={600}
