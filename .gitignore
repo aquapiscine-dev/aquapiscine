@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local database (sqlite dev — se migreaza pe Supabase)
+/data/
+*.db
+*.db-shm
+*.db-wal

@@ -1,26 +1,152 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Adancime apa — stratificare sub waterline */
+  --color-water-50: #f2f9fe;
+  --color-water-100: #e3f1fc;
+  --color-water-200: #c8e3f8;
+  --color-water-300: #a5d2f2;
+  --color-water-400: #7bbde9;
+  --color-water-500: #4da3dd;
+
+  /* Brand Aquapiscine */
+  --color-primary: #1495e9;
+  --color-primary-deep: #0261b4;
+  --color-primary-dark: #0d2b6e;
+  --color-navy: #0d2b6e;
+
+  /* Neutral */
+  --color-ink: #101820;
+  --color-slate: #4a5568;
+  --color-grout: #eceff1;
+  --color-surface: #ffffff;
+
+  /* Semantic */
+  --color-sale: #dd3333;
+  --color-star: #eeee22;
+  --color-gold: #eaba6b;
+  --color-success: #1e8e4e;
+
+  /* Fonturi */
+  --font-display: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-cta: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #fff;
+  color: var(--color-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-cta {
+  font-family: var(--font-cta);
+}
+
+/* Waterline — linia de 1px care desparte „uscat" de „sub apa" */
+.waterline {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-grout) 15%, var(--color-primary) 50%, var(--color-grout) 85%, transparent);
+}
+
+/* Adancime — gradient vertical alb -> albastru, folosit sub waterline */
+.depth-bg {
+  background: linear-gradient(180deg, #ffffff 0%, var(--color-water-50) 30%, var(--color-water-100) 60%, var(--color-water-200) 100%);
+}
+
+/* Placute-mozaic: fara umbra, separare prin rost grout */
+.tile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-grout);
+}
+
+.tile-hover {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tile-hover:hover {
+  transform: translateY(-3px);
+}
+
+/* Buton pill brand */
+.btn-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  font-family: var(--font-cta);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: background-color 0.2s, color 0.2s, transform 0.15s;
+}
+.btn-pill:active {
+  transform: translateY(1px);
+}
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--color-primary-deep);
+}
+.btn-ghost {
+  border: 1px solid var(--color-grout);
+  color: var(--color-ink);
+}
+.btn-ghost:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary-deep);
+}
+
+/* Legendă plăcuță (Roboto, date mici) */
+.tile-legend {
+  font-family: var(--font-cta);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-slate);
+}
+
+/* Caustici — unda de lumina pe apa, SVG animat */
+@keyframes caustic-drift {
+  0% { transform: translateX(-4%) skewX(-8deg); opacity: 0.5; }
+  50% { transform: translateX(4%) skewX(6deg); opacity: 0.8; }
+  100% { transform: translateX(-4%) skewX(-8deg); opacity: 0.5; }
+}
+.caustic {
+  animation: caustic-drift 14s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .caustic { animation: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* Prose pentru descriere produs (HTML din feed) */
+.product-desc {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--color-slate);
+}
+.product-desc h2, .product-desc h3, .product-desc h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 1.5em 0 0.5em;
+}
+.product-desc p { margin: 0.75em 0; }
+.product-desc ul { list-style: disc; padding-left: 1.5em; margin: 0.75em 0; }
+.product-desc strong { color: var(--color-ink); }
+.product-desc a { color: var(--color-primary-deep); text-decoration: underline; }
+.product-desc img { max-width: 100%; height: auto; }
+.product-desc table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+.product-desc td, .product-desc th { border: 1px solid var(--color-grout); padding: 0.5em 0.75em; }
