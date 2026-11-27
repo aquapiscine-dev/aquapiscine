@@ -6,13 +6,17 @@ import { Waterline } from "@/components/Waterline";
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  const categories = getCategoryTree();
+export default async function HomePage() {
+  const categories = await getCategoryTree();
 
-  const aspirIds = getCategorySubtreeIds("aspiratoare-automate")?.ids ?? [];
-  const pompeIds = getCategorySubtreeIds("pompe-piscina")?.ids ?? [];
-  const { products: aspiratoare } = queryProducts({ categoryIds: aspirIds, perPage: 12, sort: "noutati" });
-  const { products: pompe } = queryProducts({ categoryIds: pompeIds, perPage: 12, sort: "noutati" });
+  const [aspirRes, pompeRes] = await Promise.all([
+    getCategorySubtreeIds("aspiratoare-automate"),
+    getCategorySubtreeIds("pompe-piscina"),
+  ]);
+  const [{ products: aspiratoare }, { products: pompe }] = await Promise.all([
+    queryProducts({ categoryIds: aspirRes?.ids ?? [], perPage: 12, sort: "noutati" }),
+    queryProducts({ categoryIds: pompeRes?.ids ?? [], perPage: 12, sort: "noutati" }),
+  ]);
 
   return (
     <>

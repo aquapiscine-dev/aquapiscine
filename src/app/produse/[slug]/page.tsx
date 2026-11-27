@@ -15,7 +15,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const p = getProductBySlug(slug);
+  const p = await getProductBySlug(slug);
   if (!p) return { title: "Produs" };
   return {
     title: p.name,
@@ -25,7 +25,7 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
   const images = safeJsonArray(product.images);
@@ -33,7 +33,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const price = product.sale_price ?? product.price;
   const inStock = product.in_stock === 1;
 
-  const { products: related } = queryProducts({
+  const { products: related } = await queryProducts({
     category: product.category_slug ?? undefined,
     perPage: 5,
   });

@@ -31,9 +31,11 @@ export default async function ProdusePage({ searchParams }: { searchParams: SP }
     perPage: 24,
   };
 
-  const { products, total, page, totalPages } = queryProducts(filters);
-  const categories = getCategoryTree();
-  const brands = listBrands();
+  const [{ products, total, page, totalPages }, categories, brands] = await Promise.all([
+    queryProducts(filters),
+    getCategoryTree(),
+    listBrands(),
+  ]);
   const activeCategory = filters.category;
   const activeBrand = filters.brand;
 

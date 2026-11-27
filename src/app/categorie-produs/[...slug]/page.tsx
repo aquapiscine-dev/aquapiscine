@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { queryProducts, getCategorySubtreeIds, type ProductFilters } from "@/lib/products";
-import { getDb } from "@/lib/db";
+import { queryProducts, getCategorySubtreeIds, brandsInCategory, type ProductFilters } from "@/lib/products";
 import { ProductTile } from "@/components/ProductTile";
 
 export const dynamic = "force-dynamic";
@@ -14,18 +13,6 @@ function one(v: string | string[] | undefined) {
   return Array.isArray(v) ? v[0] : v;
 }
 
-function brandsInCategory(ids: number[]) {
-  const db = getDb();
-  return db
-    .prepare(
-      `SELECT b.id, b.name, b.slug, COUNT(*) AS product_count
-       FROM products p JOIN brands b ON b.id = p.brand_id
-       WHERE p.is_active = 1 AND p.category_id IN (SELECT value FROM json_each(?))
-       GROUP BY b.id ORDER BY product_count DESC LIMIT 20`
-    )
-    .all(JSON.stringify(ids)) as { id: number; name: string; slug: string; product_count: number }[];
-}
-
 // /categorie-produs/{parinte}/{copil}/ — slug-ul categoriei e ultimul segment
 export async function generateMetadata({
   params,
@@ -34,7 +21,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const leaf = slug[slug.length - 1];
-  const res = getCategorySubtreeIds(leaf);
+  const res = await getCategorySubtreeIds(leaf);
   if (!res) return { title: "Categorie" };
   return {
     title: res.cat.name,
@@ -52,7 +39,7 @@ export default async function CategoryPage({
   const { slug } = await params;
   const sp = await searchParams;
   const leaf = slug[slug.length - 1];
-  const res = getCategorySubtreeIds(leaf);
+  const res = await getCategorySubtreeIds(leaf);
   if (!res) notFound();
   const { cat, ids } = res;
 
@@ -68,8 +55,10 @@ export default async function CategoryPage({
     perPage: 24,
   };
 
-  const { products, total, page, totalPages } = queryProducts(filters);
-  const brands = brandsInCategory(ids);
+  const [{ products, total, page, totalPages }, brands] = await Promise.all([
+    queryProducts(filters),
+    brandsInCategory(ids),
+  ]);
   const basePath = `/categorie-produs/${slug.join("/")}/`;
 
   const withParams = (extra: Record<string, string | undefined>) => {

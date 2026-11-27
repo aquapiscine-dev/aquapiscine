@@ -15,8 +15,8 @@ const PHONES = [
   { label: "TEHNIC - VÂNZĂRI", number: "0773 321 535" },
 ];
 
-export function Header() {
-  const categories = getCategoryTree();
+export async function Header() {
+  const categories = await getCategoryTree();
 
   return (
     <header className="sticky top-0 z-50 bg-white">
